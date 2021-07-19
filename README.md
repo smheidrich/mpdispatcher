@@ -45,17 +45,18 @@ def process_target(receiver):
   asyncio.run(asyncio_main(receiver))
 
 
-dispatcher = MpDispatcher()
+if __name__ == "__main__":
+  dispatcher = MpDispatcher()
 
-proc = mp.Process(target=process_target, args=[dispatcher.receiver])
-proc.start()
+  proc = mp.Process(target=process_target, args=[dispatcher.receiver])
+  proc.start()
 
-sleep(1)
-print("firing event from parent process")
-dispatcher.sender.fire("some_event", "hello world")
-sleep(2)
-print("closing dispatcher")
-dispatcher.sender.close()
+  sleep(1)
+  print("firing event from parent process")
+  dispatcher.sender.fire("some_event", "hello world")
+  sleep(2)
+  print("closing dispatcher")
+  dispatcher.sender.close()
 ```
 
 Output:
