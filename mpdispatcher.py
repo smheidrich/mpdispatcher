@@ -38,11 +38,11 @@ class MpDispatchSender:
         """
         self.q.put((signal, args, kwargs))
 
-    def close(self):
+    def close(self, **q_put_kwargs):
         """
         Closes the underlying queue and aborts any blocking calls.
         """
-        self.q.put(CLOSE_SENTINEL)
+        self.q.put(CLOSE_SENTINEL, **q_put_kwargs)
 
 
 class MpDispatchReceiver:
@@ -56,9 +56,6 @@ class MpDispatchReceiver:
         self.listeners = {}
         self.q = q
         self.closed = False
-
-    def __del__(self):
-        self.close()
 
     def connect(self, signal, cb):
         if signal not in self.listeners:
@@ -186,11 +183,11 @@ class MpDispatchReceiver:
             while not self.closed:
                 await self.coro_handle_next(pool=pool)
 
-    def close(self):
+    def close(self, **q_put_kwargs):
         """
         Closes the underlying queue and aborts any blocking calls.
         """
-        self.q.put(CLOSE_SENTINEL)
+        self.q.put(CLOSE_SENTINEL, **q_put_kwargs)
 
 class Closed(Exception):
     pass
