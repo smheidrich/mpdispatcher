@@ -15,7 +15,7 @@ pip install git+https://gitlab.com/smheidrich/mpdispatcher.git
 
 ## Example
 
-A minimal example that demonstrates the main functionality:
+An example that demonstrates the asyncio functionality (requires Python 3.7+):
 
 ```python
 from mpdispatcher import MpDispatcher

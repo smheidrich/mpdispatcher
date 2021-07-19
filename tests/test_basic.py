@@ -2,6 +2,7 @@ import asyncio
 from mpdispatcher import MpDispatcher
 from multiprocessing import Process
 import pytest
+import sys
 
 @pytest.fixture()
 def dispatcher():
@@ -109,6 +110,8 @@ def receive_events_and_run_concurrent_coro(receiver):
   assert l == [43, 54, 87]
   assert l2 == [0, 1, 4]
 
+@pytest.mark.skipif(sys.version_info < (3, 7),
+  reason="requires python3.7 or higher")
 def test_coro_handle_until_closed_in_child_proc(dispatcher):
   proc = Process(target=receive_events_and_run_concurrent_coro,
     args=[dispatcher.receiver])

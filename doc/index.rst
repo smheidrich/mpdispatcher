@@ -6,7 +6,7 @@ Signal dispatcher for multiprocessing, with asyncio support.
 Quick Example
 -------------
 
-A minimal example that demonstrates the main functionality:
+An example that demonstrates the asyncio functionality (requires Python 3.7+):
 
 .. code:: python
 
