@@ -124,3 +124,46 @@ def test_coro_handle_until_closed_in_child_proc(dispatcher):
   proc.join(timeout=2)
   assert not proc.is_alive()
   assert proc.exitcode == 0
+
+
+def receive_events_threaded_and_run_parallel_coro(receiver):
+  # note: asyncio here plays the role of any other event loop, as seen in
+  # various GUI toolkits etc., so it's entirely incidental that this uses
+  # coroutines instead of just synchronous functions with threads in the
+  # background
+  l = []
+  l2 = []
+  async def some_stoppable_coro(should_stop):
+    await should_stop.wait()
+    await asyncio.sleep(0.1)
+    l2.extend([0,1,4])
+  def cb(arg):
+    l.append(arg)
+  receiver.connect("cb", cb)
+  async def asyncio_main(receiver):
+    should_stop = asyncio.Event()
+    def stop_coro():
+      should_stop.set()
+    receiver.connect("stop_coro", stop_coro)
+    loop = asyncio.get_running_loop()
+    receiver.threaded_handle_until_closed(call_via=loop.call_soon_threadsafe)
+    await some_stoppable_coro(should_stop)
+  asyncio.run(asyncio_main(receiver))
+  assert l == [43, 54, 87]
+  assert l2 == [0, 1, 4]
+
+@pytest.mark.skipif(sys.version_info < (3, 7),
+  reason="requires python3.7 or higher")
+def test_threaded_handle_until_closed_in_child_proc(dispatcher):
+  proc = Process(target=receive_events_threaded_and_run_parallel_coro,
+    args=[dispatcher.receiver])
+  proc.daemon = True
+  proc.start()
+  dispatcher.sender.fire("cb", 43)
+  dispatcher.sender.fire("cb", 54)
+  dispatcher.sender.fire("cb", 87)
+  dispatcher.sender.fire("stop_coro")
+  dispatcher.sender.close()
+  proc.join(timeout=2)
+  assert not proc.is_alive()
+  assert proc.exitcode == 0
