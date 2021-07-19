@@ -52,7 +52,8 @@ A minimal example that demonstrates the main functionality:
 
 Output:
 
-.. code::
+.. code:: text
+
    some_async_task task started
    firing event from parent process
    handling event with arg 'hello world' in child process
