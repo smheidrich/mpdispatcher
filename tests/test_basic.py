@@ -117,7 +117,7 @@ def receive_events_until_blocking(receiver):
   def cb(arg):
     l.append(arg)
   receiver.connect("cb", cb)
-  sleep(0.1)
+  sleep(0.3)
   receiver.handle_until_blocking()
   assert l == [43, 54, 87]
 
