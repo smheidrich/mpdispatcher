@@ -1,3 +1,4 @@
+import asyncio
 from mpdispatcher import MpDispatcher
 from multiprocessing import Process
 import pytest
@@ -5,6 +6,7 @@ import pytest
 @pytest.fixture()
 def dispatcher():
   return MpDispatcher()
+
 
 def receive_single_event(receiver):
   l = []
@@ -81,6 +83,41 @@ def test_handle_until_closed_in_child_proc_closing_itself(dispatcher):
   dispatcher.sender.fire("cb", 43)
   dispatcher.sender.fire("cb", 54)
   dispatcher.sender.fire("cb", 87)
+  proc.join(timeout=2)
+  assert not proc.is_alive()
+  assert proc.exitcode == 0
+
+
+def receive_events_and_run_concurrent_coro(receiver):
+  l = []
+  l2 = []
+  async def some_concurrent_coro():
+    for i in range(3):
+      l2.append(i**2)
+      await asyncio.sleep(0.1)
+  def cb(arg):
+    l.append(arg)
+  receiver.connect("cb", cb)
+  async def asyncio_main(receiver):
+    await asyncio.wait([
+      asyncio.create_task(x) for x in [
+        some_concurrent_coro(),
+        receiver.coro_handle_until_closed()
+      ]
+    ])
+  asyncio.run(asyncio_main(receiver))
+  assert l == [43, 54, 87]
+  assert l2 == [0, 1, 4]
+
+def test_coro_handle_until_closed_in_child_proc(dispatcher):
+  proc = Process(target=receive_events_and_run_concurrent_coro,
+    args=[dispatcher.receiver])
+  proc.daemon = True
+  proc.start()
+  dispatcher.sender.fire("cb", 43)
+  dispatcher.sender.fire("cb", 54)
+  dispatcher.sender.fire("cb", 87)
+  dispatcher.sender.close()
   proc.join(timeout=2)
   assert not proc.is_alive()
   assert proc.exitcode == 0
