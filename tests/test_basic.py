@@ -112,6 +112,31 @@ def test_handle_until_closed_in_child_proc_closing_itself(dispatcher):
   assert proc.exitcode == 0
 
 
+def receive_events_until_blocking(receiver):
+  l = []
+  def cb(arg):
+    l.append(arg)
+  receiver.connect("cb", cb)
+  sleep(0.1)
+  receiver.handle_until_blocking()
+  assert l == [43, 54, 87]
+
+def test_handle_until_blocking(dispatcher):
+  proc = Process(target=receive_events_until_blocking,
+    args=[dispatcher.receiver])
+  proc.daemon = True
+  proc.start()
+  dispatcher.sender.fire("cb", 43)
+  dispatcher.sender.fire("cb", 54)
+  dispatcher.sender.fire("cb", 87)
+  sleep(0.5)
+  dispatcher.sender.fire("cb", 100)
+  dispatcher.sender.close()
+  proc.join(timeout=2)
+  assert not proc.is_alive()
+  assert proc.exitcode == 0
+
+
 def receive_events_and_run_concurrent_coro(receiver):
   l = []
   l2 = []
