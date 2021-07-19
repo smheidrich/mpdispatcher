@@ -1,6 +1,7 @@
 import asyncio
 from mpdispatcher import MpDispatcher, Closed
 from multiprocessing import Process
+import multiprocessing as mp
 import pytest
 import sys
 from time import sleep
@@ -112,26 +113,28 @@ def test_handle_until_closed_in_child_proc_closing_itself(dispatcher):
   assert proc.exitcode == 0
 
 
-def receive_events_until_blocking(receiver):
+def receive_events_until_blocking(receiver, aux_in, aux_out):
   l = []
   def cb(arg):
     l.append(arg)
   receiver.connect("cb", cb)
-  sleep(0.3)
+  assert aux_in.get(timeout=5) == "sent_3"
   receiver.handle_until_blocking()
+  aux_out.put("blocks")
   assert l == [43, 54, 87]
 
 def test_handle_until_blocking(dispatcher):
+  aux_to_child, aux_from_child = mp.Queue(), mp.Queue()
   proc = Process(target=receive_events_until_blocking,
-    args=[dispatcher.receiver])
+    args=[dispatcher.receiver, aux_to_child, aux_from_child])
   proc.daemon = True
   proc.start()
   dispatcher.sender.fire("cb", 43)
   dispatcher.sender.fire("cb", 54)
   dispatcher.sender.fire("cb", 87)
-  sleep(0.3)
+  aux_to_child.put("sent_3")
+  assert aux_from_child.get("blocks")
   dispatcher.sender.fire("cb", 100)
-  sleep(0.3)
   dispatcher.sender.close()
   proc.join(timeout=2)
   assert not proc.is_alive()
