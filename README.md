@@ -1,7 +1,7 @@
 # mpdispatcher
 
-[![pipeline status](https://gitlab.com/smheidrich/mpdispatcher/badges/master/pipeline.svg?style=flat-square)](https://gitlab.com/smheidrich/mpdispatcher/-/commits/master)
-[![coverage report](https://gitlab.com/smheidrich/mpdispatcher/badges/master/coverage.svg?style=flat-square)](https://gitlab.com/smheidrich/mpdispatcher/-/commits/master)
+[![pipeline status](https://gitlab.com/smheidrich/mpdispatcher/badges/main/pipeline.svg?style=flat-square)](https://gitlab.com/smheidrich/mpdispatcher/-/commits/main)
+[![coverage report](https://gitlab.com/smheidrich/mpdispatcher/badges/main/coverage.svg?style=flat-square)](https://gitlab.com/smheidrich/mpdispatcher/-/commits/main)
 [![docs](https://img.shields.io/badge/docs-online-brightgreen?style=flat-square)](https://smheidrich.gitlab.io/mpdispatcher/)
 
 Signal dispatcher for multiprocessing, with asyncio support.
