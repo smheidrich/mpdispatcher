@@ -35,7 +35,6 @@ def test_handle_next_in_parent_proc_with_timeout(dispatcher):
     l.append(arg)
   dispatcher.receiver.connect("cb", cb)
   proc.start()
-  import queue
   dispatcher.receiver.handle_next(timeout=2)
   proc.join(timeout=2)
   assert l == [54]
