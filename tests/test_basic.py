@@ -6,7 +6,7 @@ import pytest
 def dispatcher():
   return MpDispatcher()
 
-def process_target(receiver):
+def receive_single_event(receiver):
   l = []
   def cb(arg):
     l.append(arg)
@@ -15,7 +15,7 @@ def process_target(receiver):
   assert l == [54]
 
 def test_handle_next_in_child_proc_with_timeout(dispatcher):
-  proc = Process(target=process_target, args=[dispatcher.receiver])
+  proc = Process(target=receive_single_event, args=[dispatcher.receiver])
   proc.daemon = True
   proc.start()
   dispatcher.sender.fire("cb", 54)
@@ -24,12 +24,11 @@ def test_handle_next_in_child_proc_with_timeout(dispatcher):
   assert proc.exitcode == 0
 
 
-def process2_target(sender):
+def send_single_event(sender):
   sender.fire("cb", 54)
-  print("end of proc2")
 
 def test_handle_next_in_parent_proc_with_timeout(dispatcher):
-  proc = Process(target=process2_target, args=[dispatcher.sender])
+  proc = Process(target=send_single_event, args=[dispatcher.sender])
   l = []
   def cb(arg):
     l.append(arg)
