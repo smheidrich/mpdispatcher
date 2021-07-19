@@ -1,4 +1,7 @@
+image: Visual Studio 2019
+
 environment:
+  PYTHON: "C:\\Python39"
   matrix:
   - TOXENV: py36
   - TOXENV: py39
@@ -6,7 +9,8 @@ environment:
 build: off
 
 install:
-- python3 -m pip install tox
+- "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+- python -m pip install tox
 
 test_script:
 - tox
