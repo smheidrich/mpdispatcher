@@ -2,6 +2,10 @@ from mpdispatcher import MpDispatcher
 from multiprocessing import Process
 import pytest
 
+@pytest.fixture()
+def dispatcher():
+  return MpDispatcher()
+
 def process_target(receiver):
   l = []
   def cb(arg):
@@ -10,8 +14,7 @@ def process_target(receiver):
   receiver.handle_next(timeout=2)
   assert l == [54]
 
-def test_handle_next_in_child_proc_with_timeout():
-  dispatcher = MpDispatcher()
+def test_handle_next_in_child_proc_with_timeout(dispatcher):
   proc = Process(target=process_target, args=[dispatcher.receiver])
   proc.daemon = True
   proc.start()
@@ -25,8 +28,7 @@ def process2_target(sender):
   sender.fire("cb", 54)
   print("end of proc2")
 
-def test_handle_next_in_parent_proc_with_timeout():
-  dispatcher = MpDispatcher()
+def test_handle_next_in_parent_proc_with_timeout(dispatcher):
   proc = Process(target=process2_target, args=[dispatcher.sender])
   l = []
   def cb(arg):
