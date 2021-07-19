@@ -8,7 +8,7 @@ Quick Example
 
 TODO
 
->>> from mpdispatcher import Mpdispatcher
+>>> from mpdispatcher import MpDispatcher
 >>>
 >>> mpd = MpDispatcher()
 
