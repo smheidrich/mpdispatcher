@@ -9,7 +9,7 @@ cache:
 
 before_script:
   - python --version
-  - pip install tox pytest codecov sphinx
+  - pip install pytest codecov sphinx
 
 pytest:
   image: $IMAGE
