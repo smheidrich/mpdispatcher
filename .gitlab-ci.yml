@@ -1,0 +1,33 @@
+image: "python:3.9"
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip
+
+before_script:
+  - python --version
+  - pip install tox pytest codecov sphinx
+
+pytest:
+  image: $IMAGE
+  parallel:
+    matrix:
+      - IMAGE: ['python:3.6', 'python:3.9']
+  stage: test
+  script:
+  - pytest --cov=mpdispatcher
+  after_script:
+  - bash <(curl -s https://codecov.io/bash)
+
+pages:
+  stage: deploy
+  script:
+  - (cd doc && make html); mv doc/_build/html public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
