@@ -22,7 +22,7 @@ copyright = '2021, Shahriar Heidrich'
 author = 'Shahriar Heidrich'
 
 # The full version, including alpha/beta/rc tags
-release = '2020'
+release = '2021'
 
 
 # -- General configuration ---------------------------------------------------

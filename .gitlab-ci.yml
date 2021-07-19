@@ -11,6 +11,7 @@ before_script:
   - python --version
   - pip install pytest pytest-cov codecov sphinx sybil
   - pip install git+https://github.com/smheidrich/sphinxcontrib-repl-selectability.git
+  - pip install -e .
 
 pytest:
   image: $IMAGE
