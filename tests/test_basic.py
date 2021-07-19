@@ -1,8 +1,9 @@
 import asyncio
-from mpdispatcher import MpDispatcher
+from mpdispatcher import MpDispatcher, Closed
 from multiprocessing import Process
 import pytest
 import sys
+from time import sleep
 
 @pytest.fixture()
 def dispatcher():
@@ -22,6 +23,28 @@ def test_handle_next_in_child_proc_with_timeout(dispatcher):
   proc.daemon = True
   proc.start()
   dispatcher.sender.fire("cb", 54)
+  proc.join(timeout=2)
+  assert not proc.is_alive()
+  assert proc.exitcode == 0
+
+
+def receive_three_events_expecting_close(receiver):
+  l = []
+  def cb(arg):
+    l.append(arg)
+  receiver.connect("cb", cb)
+  receiver.handle_next(timeout=2)
+  receiver.handle_next(timeout=2)
+  with pytest.raises(Closed):
+    receiver.handle_next(timeout=2)
+
+def test_handle_next_on_closed(dispatcher):
+  proc = Process(target=receive_three_events_expecting_close,
+    args=[dispatcher.receiver])
+  proc.daemon = True
+  proc.start()
+  dispatcher.sender.fire("cb", 54)
+  dispatcher.sender.close()
   proc.join(timeout=2)
   assert not proc.is_alive()
   assert proc.exitcode == 0
