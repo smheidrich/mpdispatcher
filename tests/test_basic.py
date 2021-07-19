@@ -84,6 +84,7 @@ def test_handle_until_closed_in_child_proc(dispatcher):
   dispatcher.sender.fire("cb", 43)
   dispatcher.sender.fire("cb", 54)
   dispatcher.sender.fire("cb", 87)
+  dispatcher.sender.fire("some_nonexistent_event", 100)
   dispatcher.sender.close()
   proc.join(timeout=2)
   assert not proc.is_alive()
