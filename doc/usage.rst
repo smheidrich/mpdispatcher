@@ -88,6 +88,7 @@ blocking :meth:`MpDispatchReceiver.handle_until_closed` method:
     disp.sender.fire("on_new_user", "Jerry")
     disp.sender.fire("on_delete_user", "Newman")
     disp.sender.close()
+
     proc.join()
 
 The output of this would be:
@@ -97,12 +98,75 @@ The output of this would be:
   Hello Jerry.
   Goodbye Newman.
 
-This would work just as well if we were firing events from the child process to
-the parent process, of course, we'd just have to make sure to pass the sender
-to the child instead of the receiver.
+This would of course work just as well if we were firing events from the child
+process to the parent process, we'd just have to make sure to pass the sender
+instead of the receiver to the child.
 
 
 Listening process with concurrency
 ----------------------------------
+
+Code running in processes will often have logic to wait for events of its own
+that have nothing to do with `mpdispatcher`, e.g. if it's networking code. If
+this code is written using :mod:`asyncio`, it's trivial to have it run
+concurrently with the dispatcher handling using the coroutine
+:meth:`MpDispatchReceiver.coro_handle_until_closed`. This was already
+illustrated in the example from the :doc:`homepage <index>`:
+
+.. code:: python
+
+   from mpdispatcher import MpDispatcher
+   import asyncio
+   import multiprocessing as mp
+   from time import sleep
+
+   async def some_async_task():
+     # pretend to do something...
+     print("some_async_task task started")
+     await asyncio.sleep(2)
+     print("some_async_task task finished")
+
+   def some_event_handler(some_arg):
+     print(f"handling event with arg '{some_arg}' in child process")
+
+   async def asyncio_main(receiver):
+     await asyncio.wait([
+       asyncio.create_task(x) for x in [
+         some_async_task(),
+         receiver.coro_handle_until_closed()
+       ]
+     ])
+
+   def process_target(receiver):
+     receiver.connect("some_event", some_event_handler)
+     asyncio.run(asyncio_main(receiver))
+
+
+   if __name__ == "__main__":
+     dispatcher = MpDispatcher()
+
+     proc = mp.Process(target=process_target, args=[dispatcher.receiver])
+     proc.start()
+
+     sleep(1)
+     print("firing event from parent process")
+     dispatcher.sender.fire("some_event", "hello world")
+     sleep(2)
+     print("closing dispatcher")
+     dispatcher.sender.close()
+
+Output:
+
+.. code:: text
+
+   some_async_task task started
+   firing event from parent process
+   handling event with arg 'hello world' in child process
+   some_async_task task finished
+   closing dispatcher
+
+
+Listening process with its own event loop
+-----------------------------------------
 
 TODO

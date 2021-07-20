@@ -35,7 +35,7 @@ extensions = [
   'sphinx.ext.napoleon',
   'sphinx.ext.autosectionlabel',
   'sphinx.ext.intersphinx',
-  'sphinxcontrib.repl_selectability',
+  # 'sphinxcontrib.repl_selectability',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -79,3 +79,7 @@ autodoc_typehints = 'description'
 # -- Intersphinx configuration -----------------------------------------------
 
 intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
+
+# -- Cross-referencing defaults ----------------------------------------------
+
+# default_role = 'any'
