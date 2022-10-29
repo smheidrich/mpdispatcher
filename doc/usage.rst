@@ -169,4 +169,15 @@ Output:
 Listening process with its own event loop
 -----------------------------------------
 
-TODO
+If your listening process is required to use another framework's blocking event
+loop, as would be typical for e.g. a process responsible for running your
+application's GUI, you can use
+:meth:`MpDispatchReceiver.threaded_handle_until_closed` to wait on events in a
+separate thread and have their handlers executed back in the main thread so
+long as the framework contains a function to arrange the latter (e.g.
+`idle_add` in `Glib`).
+
+I stole this idea from Trio, cf. its section on "guest mode"
+`here <https://trio.readthedocs.io/en/stable/reference-lowlevel.html>`_.
+
+TODO example
